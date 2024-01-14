@@ -1,9 +1,10 @@
 import React, { Component } from 'react';
-import { Searchbar, ImageGallery, Button, Loader, Modal } from 'components';
+import { Searchbar, ImageGallery, Button, Loader } from 'components';
 import { getPhotos } from 'helpers/api';
 import { Container } from './App.styled';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import Modal from 'components/Modal/Modal';
 
 export class App extends Component {
   state = {
@@ -91,7 +92,7 @@ export class App extends Component {
       page: prevState.page + 1,
     }));
   };
-  
+
   handleNextPhoto = id => {
     const { images } = this.state;
     const imageId = this.state.images.findIndex(img => img.id === id);

@@ -10,10 +10,12 @@ export const ModalBackdrop = styled.div`
   background-color: rgba(0, 0, 0, 0.7);
 `;
 export const ModalContent = styled.div`
+  overflow: hidden;
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+  max-height: 80%;
   max-width: 70%;
   width: 100%;
   background-color: #fff;
@@ -22,7 +24,7 @@ export const ModalContent = styled.div`
 export const ButtonList = styled.ul`
   display: flex;
   position: absolute;
-  bottom: calc(8vh);
+  bottom: 4px;
   left: 50%;
   transform: translateX(-50%);
   gap: calc(100vw - 80vw);

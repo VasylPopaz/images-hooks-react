@@ -1,59 +1,60 @@
-import React, { Component } from 'react';
+import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { ButtonList, ModalBackdrop, ModalContent } from './Modal.styled';
 
 const modalRoot = document.querySelector('#modal-root');
 
-export class Modal extends Component {
-  state = {
-    clickedButton: null,
-  };
-
-  componentDidMount() {
+export default function Modal({
+  onClose,
+  modalContent,
+  handlePrevPhoto,
+  handleNextPhoto,
+}) {
+  useEffect(() => {
     document.body.style.overflow = 'hidden';
-    window.addEventListener('keydown', this.handleEscapePress);
-    window.addEventListener('keydown', this.handleNextImg);
-  }
+    window.addEventListener('keydown', handleEscapePress);
+    window.addEventListener('keydown', handleSwitchImg);
 
-  componentWillUnmount() {
-    document.body.style.overflow = 'auto';
-    window.removeEventListener('keydown', this.handleEscapePress);
-    window.removeEventListener('keydown', this.handleNextImg);
-  }
+    return () => {
+      document.body.style.overflow = 'auto';
+      window.removeEventListener('keydown', handleEscapePress);
+      window.removeEventListener('keydown', handleSwitchImg);
+    };
+  });
 
-  handleEscapePress = event => {
-    if (event.code === 'Escape') this.props.onClose();
+  const handleEscapePress = event => {
+    if (event.code === 'Escape') onClose();
   };
 
-  handleBackdropClick = event => {
-    if (event.currentTarget === event.target) this.props.onClose();
+  const handleBackdropClick = event => {
+    if (event.currentTarget === event.target) onClose();
   };
 
-  handleNextImg = event => {
-    const { id } = this.props.modalContent;
+  const handleSwitchImg = event => {
+    const { id } = modalContent;
+
     if (event.code === 'ArrowRight' || event.target.textContent === 'Next')
-      this.props.handleNextPhoto(id);
+      handleNextPhoto(id);
+
     if (event.code === 'ArrowLeft' || event.target.textContent === 'Prev')
-      this.props.handlePrevPhoto(id);
+      handlePrevPhoto(id);
   };
 
-  render() {
-    const { alt_description, urls } = this.props.modalContent;
-    return createPortal(
-      <ModalBackdrop onClick={this.handleBackdropClick}>
-        <ModalContent>
-          <img src={urls.full} alt={alt_description} />
-        </ModalContent>
+  const { alt_description, urls } = modalContent;
+  return createPortal(
+    <ModalBackdrop onClick={handleBackdropClick}>
+      <ModalContent>
+        <img src={urls.full} alt={alt_description} />
         <ButtonList>
           <li>
-            <button onClick={this.handleNextImg}>Prev</button>
+            <button onClick={handleSwitchImg}>Prev</button>
           </li>
           <li>
-            <button onClick={this.handleNextImg}>Next</button>
+            <button onClick={handleSwitchImg}>Next</button>
           </li>
         </ButtonList>
-      </ModalBackdrop>,
-      modalRoot
-    );
-  }
+      </ModalContent>
+    </ModalBackdrop>,
+    modalRoot
+  );
 }
