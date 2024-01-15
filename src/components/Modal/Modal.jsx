@@ -4,31 +4,33 @@ import { ButtonList, ModalBackdrop, ModalContent } from './Modal.styled';
 
 const modalRoot = document.querySelector('#modal-root');
 
-export default function Modal({
+export function Modal({
   onClose,
   modalContent,
   handlePrevPhoto,
   handleNextPhoto,
 }) {
   useEffect(() => {
+    const handleEscapePress = event => {
+      if (event.code === 'Escape') onClose();
+    };
+
     document.body.style.overflow = 'hidden';
     window.addEventListener('keydown', handleEscapePress);
-    window.addEventListener('keydown', handleSwitchImg);
 
     return () => {
       document.body.style.overflow = 'auto';
       window.removeEventListener('keydown', handleEscapePress);
-      window.removeEventListener('keydown', handleSwitchImg);
     };
-  });
-
-  const handleEscapePress = event => {
-    if (event.code === 'Escape') onClose();
-  };
+  }, [onClose]);
 
   const handleBackdropClick = event => {
     if (event.currentTarget === event.target) onClose();
   };
+
+  // const handleEscapePress = event => {
+  //   if (event.code === 'Escape') onClose();
+  // };
 
   const handleSwitchImg = event => {
     const { id } = modalContent;
@@ -39,6 +41,11 @@ export default function Modal({
     if (event.code === 'ArrowLeft' || event.target.textContent === 'Prev')
       handlePrevPhoto(id);
   };
+
+  // const handleKeydown = event => {
+  //   handleEscapePress(event);
+  //   handleSwitchImg(event);
+  // };
 
   const { alt_description, urls } = modalContent;
   return createPortal(

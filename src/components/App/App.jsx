@@ -1,40 +1,33 @@
-import React, { Component } from 'react';
-import { Searchbar, ImageGallery, Button, Loader } from 'components';
+import { useState, useEffect } from 'react';
+import { Searchbar, ImageGallery, Button, Loader, Modal } from 'components';
 import { getPhotos } from 'helpers/api';
 import { Container } from './App.styled';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import Modal from 'components/Modal/Modal';
 
-export class App extends Component {
-  state = {
-    images: [],
-    imageUrl: '',
-    modalContent: null,
-    query: '',
-    page: 1,
-    isLoading: false,
-    showModal: false,
-    showLoadMore: false,
-  };
+export const App = () => {
+  const [images, setImages] = useState([]);
+  const [query, setQuery] = useState('');
+  const [page, setPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [modalContent, setModalContent] = useState(null);
+  const [showLoadMore, setShowLoadMore] = useState(false);
 
-  async componentDidUpdate(_, prevState) {
-    const { query, page } = this.state;
+  useEffect(() => {
+    if (!query) return;
 
-    if (prevState.query !== query || prevState.page !== page) {
-      this.setState({
-        isLoading: true,
-      });
-
+    const loadingPhotos = async () => {
       try {
+        setIsLoading(true);
+
         const { results, total, total_pages } = await getPhotos(query, page);
         const isMorePhotos = page < total_pages;
 
-        if (!total) {
+        if (!total)
           return toast.warning(
             'Sorry, there are no images matching your search query. Please try again.'
           );
-        }
 
         if (page === 1) {
           toast.success(`Hurray! We found ${total} images.`);
@@ -46,11 +39,8 @@ export class App extends Component {
             });
           }, 400);
         }
-
-        this.setState(prevState => ({
-          images: [...prevState.images, ...results],
-          showLoadMore: isMorePhotos,
-        }));
+        setImages(prevState => [...prevState, ...results]);
+        setShowLoadMore(isMorePhotos);
 
         if (!isMorePhotos) {
           toast.info(
@@ -62,79 +52,67 @@ export class App extends Component {
         console.log(error.name);
         console.log(error.message);
       } finally {
-        this.setState({ isLoading: false });
+        setIsLoading(false);
       }
-    }
-  }
+    };
+    loadingPhotos();
+  }, [query, page]);
 
-  handleSubmit = searchQuery => {
-    if (searchQuery === this.state.query) return;
-    this.setState({
-      images: [],
-      query: searchQuery,
-      page: 1,
-      imageUrl: '',
-      showLoadMore: false,
-    });
+  const handleSubmit = searchQuery => {
+    if (searchQuery === query) return;
+    setImages([]);
+    setQuery(searchQuery);
+    setPage(1);
+    setShowLoadMore(false);
+    setModalContent(null);
   };
 
-  toggleModal = () => {
-    this.setState(prevState => ({ showModal: !prevState.showModal }));
+  const toggleModal = () => {
+    setShowModal(prevState => !prevState);
   };
 
-  handleImgClick = content => {
-    this.setState({ modalContent: content });
-    this.toggleModal();
+  const handleImgClick = content => {
+    setModalContent(content);
+    toggleModal();
   };
 
-  handleLoadMoreClick = () => {
-    this.setState(prevState => ({
-      page: prevState.page + 1,
-    }));
+  const handleLoadMoreClick = () => {
+    setPage(prevState => prevState + 1);
   };
 
-  handleNextPhoto = id => {
-    const { images } = this.state;
-    const imageId = this.state.images.findIndex(img => img.id === id);
+  const handleNextPhoto = id => {
+    const imageId = images.findIndex(img => img.id === id);
 
-    if (imageId === images.length - 1)
-      return this.setState({ modalContent: images[0] });
-    this.setState({ modalContent: images[imageId + 1] });
+    if (imageId === images.length - 1) return setModalContent(images[0]);
+    setModalContent(images[imageId + 1]);
   };
 
-  handlePrevPhoto = id => {
-    const { images } = this.state;
-    const imageId = this.state.images.findIndex(img => img.id === id);
+  const handlePrevPhoto = id => {
+    const imageId = images.findIndex(img => img.id === id);
 
-    if (!imageId)
-      return this.setState({ modalContent: images[images.length - 1] });
-    this.setState({ modalContent: images[imageId - 1] });
+    if (!imageId) return setModalContent(images[images.length - 1]);
+    setModalContent(images[imageId - 1]);
   };
 
-  render() {
-    const { images, isLoading, showModal, showLoadMore, modalContent } =
-      this.state;
-
-    return (
-      <Container>
-        <Searchbar onSubmit={this.handleSubmit} />
-        {images.length ? (
-          <ImageGallery images={images} onClick={this.handleImgClick} />
-        ) : null}
-        {isLoading && <Loader />}
-        {showLoadMore
-          ? !isLoading && <Button onClick={this.handleLoadMoreClick} />
-          : null}
-        {showModal && (
-          <Modal
-            onClose={this.toggleModal}
-            handleNextPhoto={() => this.handleNextPhoto(modalContent.id)}
-            handlePrevPhoto={() => this.handlePrevPhoto(modalContent.id)}
-            modalContent={modalContent}
-          />
-        )}
-        <ToastContainer autoClose={2000} />
-      </Container>
-    );
-  }
-}
+  return (
+    <Container>
+      <Searchbar onSubmit={handleSubmit} />
+      {images.length ? (
+        <ImageGallery images={images} onClick={handleImgClick} />
+      ) : null}
+      {isLoading && <Loader />}
+      {showLoadMore
+        ? !isLoading && <Button onClick={handleLoadMoreClick} />
+        : null}
+      {showModal && (
+        <Modal
+          onClose={toggleModal}
+          handleNextPhoto={() => handleNextPhoto(modalContent.id)}
+          handlePrevPhoto={() => handlePrevPhoto(modalContent.id)}
+          modalContent={modalContent}
+        />
+      )}
+      <ToastContainer autoClose={2000} />
+    </Container>
+  );
+};
