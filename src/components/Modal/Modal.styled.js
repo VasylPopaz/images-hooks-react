@@ -10,11 +10,13 @@ export const ModalBackdrop = styled.div`
   background-color: rgba(0, 0, 0, 0.7);
 `;
 export const ModalContent = styled.div`
+  overflow: hidden;
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   max-width: 70%;
+  max-height: 95%;
   width: 100%;
   background-color: #fff;
   border-radius: 8px;

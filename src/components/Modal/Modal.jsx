@@ -10,42 +10,36 @@ export function Modal({
   handlePrevPhoto,
   handleNextPhoto,
 }) {
+  const { id } = modalContent;
+
   useEffect(() => {
-    const handleEscapePress = event => {
-      if (event.code === 'Escape') onClose();
+    const handleKeydown = event => {
+      const { code } = event;
+      if (code === 'Escape') onClose();
+
+      if (code === 'ArrowRight') handleNextPhoto(id);
+      if (code === 'ArrowLeft') handlePrevPhoto(id);
     };
 
     document.body.style.overflow = 'hidden';
-    window.addEventListener('keydown', handleEscapePress);
+    document.addEventListener('keydown', handleKeydown);
 
     return () => {
       document.body.style.overflow = 'auto';
-      window.removeEventListener('keydown', handleEscapePress);
+      document.removeEventListener('keydown', handleKeydown);
     };
-  }, [onClose]);
+  }, [onClose, id, handleNextPhoto, handlePrevPhoto]);
 
   const handleBackdropClick = event => {
     if (event.currentTarget === event.target) onClose();
   };
 
-  // const handleEscapePress = event => {
-  //   if (event.code === 'Escape') onClose();
-  // };
-
   const handleSwitchImg = event => {
-    const { id } = modalContent;
+    const { textContent } = event.target;
 
-    if (event.code === 'ArrowRight' || event.target.textContent === 'Next')
-      handleNextPhoto(id);
-
-    if (event.code === 'ArrowLeft' || event.target.textContent === 'Prev')
-      handlePrevPhoto(id);
+    if (textContent === 'Next >') handleNextPhoto(id);
+    if (textContent === '< Prev') handlePrevPhoto(id);
   };
-
-  // const handleKeydown = event => {
-  //   handleEscapePress(event);
-  //   handleSwitchImg(event);
-  // };
 
   const { alt_description, urls } = modalContent;
   return createPortal(
@@ -54,10 +48,10 @@ export function Modal({
         <img src={urls.full} alt={alt_description} />
         <ButtonList>
           <li>
-            <button onClick={handleSwitchImg}>Prev</button>
+            <button onClick={handleSwitchImg}>&lt; Prev</button>
           </li>
           <li>
-            <button onClick={handleSwitchImg}>Next</button>
+            <button onClick={handleSwitchImg}>Next &gt;</button>
           </li>
         </ButtonList>
       </ModalContent>
