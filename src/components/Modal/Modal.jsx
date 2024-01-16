@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { ButtonList, ModalBackdrop, ModalContent } from './Modal.styled';
 
@@ -11,6 +11,8 @@ export function Modal({
   handleNextPhoto,
 }) {
   const { id } = modalContent;
+  const prevButtonRef = useRef(null);
+  const nextButtonRef = useRef(null);
 
   useEffect(() => {
     const handleKeydown = event => {
@@ -35,10 +37,10 @@ export function Modal({
   };
 
   const handleSwitchImg = event => {
-    const { textContent } = event.target;
+    const { target } = event;
 
-    if (textContent === 'Next >') handleNextPhoto(id);
-    if (textContent === '< Prev') handlePrevPhoto(id);
+    if (prevButtonRef.current === target) handlePrevPhoto(id);
+    if (nextButtonRef.current === target) handleNextPhoto(id);
   };
 
   const { alt_description, urls } = modalContent;
@@ -48,10 +50,14 @@ export function Modal({
         <img src={urls.full} alt={alt_description} />
         <ButtonList>
           <li>
-            <button onClick={handleSwitchImg}>&lt; Prev</button>
+            <button ref={prevButtonRef} onClick={handleSwitchImg}>
+              &lt; Prev
+            </button>
           </li>
           <li>
-            <button onClick={handleSwitchImg}>Next &gt;</button>
+            <button ref={nextButtonRef} onClick={handleSwitchImg}>
+              Next &gt;
+            </button>
           </li>
         </ButtonList>
       </ModalContent>
